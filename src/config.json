@@ -1,0 +1,23 @@
+{
+  "beian": "粤ICP备18137713号",
+  "super_dock_api_server": "https://cloud.sbnet.xyz/gosd/",
+  "oauth_client_id": "XXXX",
+  "oauth_client_secret": "XXXX",
+  "lang": "zh",
+  "ice_server": "stun:stun.l.google.com:19302",
+  "ice_servers": [
+    {
+      "urls": "turn:streaming1.sbnet.xyz:3478",
+      "username": "william",
+      "credential": "E%CV*aWvYG^eo2Ft#C*HpdyGPYfZw7YJI5*e0qQlHOo3n05*Bs"
+      
+    }
+  ],
+  "amap_key": "c05a1f02caa3d703f482ba13674008b6",
+  "gmap_key": "AIzaSyB4ReiTkBq7bw1sFd0EgnO55WnGWQ46MZI",
+  "caiyun_key": "Lczn9EiN0OBoG4dw",
+  "heweather_key": "a4eaecb690924e81a315257e924cbfd9",
+  "map_tiles_url": "https://sb.im/google-maps/vt?lyrs=s&x={x}&y={y}&z={z}",
+  "mapbox_key":"pk.eyJ1IjoibmV3YmVsYWIiLCJhIjoiY2s5NzJrY2ZkMGR0MzNrbGk0dGkzNDNsaSJ9.A02U8h5xvBlClhdxkGgODA",
+  "mqtt_url": "wss://admin:public@cloud.sbnet.xyz/mqtt"
+}

@@ -1,0 +1,79 @@
+body {
+  margin: 0;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+}
+
+/* public status colors */
+.color--green {
+  color: #67c23a;
+}
+.color--blue {
+  color: #409eff;
+}
+.color--orange {
+  color: #e6a23c;
+}
+.color--red {
+  color: #f56c6c;
+}
+.color--grey {
+  color: #606266;
+}
+
+@media screen and (min-width: 1200px) { /* width > 1200, 部分双栏 */
+  /* container */
+  .plan__view,
+  .plan__edit,
+  .drone,
+  .depot {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  /* map */
+  .sd-map:not(.overview-map) .el-card__body {
+    height: calc(100% - 73px); /* 73 = 36 + 12*2 + 1 */
+  }
+  .sd-map .map__el {
+    height: 100%;
+  }
+
+  /* plan */
+  .plan .sd-card {
+    flex-basis: calc(50% - 2px);
+  }
+  .plan .plan__history {
+    flex-basis: 100%;
+  }
+
+  /* drone & depot */
+  .status,
+  .battery,
+  .control,
+  .debug {
+    width: 100%;
+  }
+
+  /* drone */
+  .drone .monitor,
+  .drone .sd-map {
+    width: calc(50% - 2px);
+  }
+
+  /* depot */
+  .depot .monitor {
+    width: calc(100% - 604px);
+  }
+  .depot .weather .el-card__body {
+    height: calc(100% - 73px);
+  }
+}
+
+@media screen and (min-width: 1580px) { /* width > 1580, 全部双栏 */
+  /* drone & depot */
+  .battery,
+  .control,
+  .debug {
+    width: calc(50% - 2px);
+  }
+}
