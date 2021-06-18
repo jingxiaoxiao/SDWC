@@ -23,6 +23,7 @@
     "hls.js": "^0.13.2",
     "jsonrpc-lite": "^2.1.0",
     "lodash": "^4.17.15",
+    "mapbox-gl": "^2.3.0",
     "mqtt": "^4.1.0",
     "nipplejs": "^0.8.5",
     "papaparse": "^5.2.0",

@@ -30,6 +30,10 @@ import 'swiper/swiper-bundle.css'
 import VueAMap from "vue-amap";
 
 
+import mapBoxGl from 'mapbox-gl'
+Vue.prototype.$mapboxgl = mapBoxGl
+
+
 Vue.use(JSONTreeView);
 
 Vue.use(VideoPlayer)

@@ -177,7 +177,7 @@
             </div>
         </div>
       
-        <div class="btm-rgt clearfix">
+        <div class="btm-rgt">
           <div class="center-control">
             <img class="control-poit control-top" src="/assets/images/Polygon1.png" alt="">
             <img class="control-poit control-bottom" src="/assets/images/Polygon2.png" alt="">
@@ -199,7 +199,7 @@
     <!-- 小地图 -->
     <div class="small-map">
       <p class="map-coor">坐标：195,1828,282,5</p>
-      <div id="container" ref="basicMapbox" class="amap">
+      <div id="container" ref="container" class="amap">
       </div> 
     </div>
 
@@ -208,8 +208,11 @@
 </template>
 
 <script>
-
+import { AMapManager, lazyAMapApiLoaderInstance } from "vue-amap";
+let amapManager = new AMapManager();
+// import AMap from 'AMap'
 export default {
+  // :layers="new AMap.TileLayer.Satellite()"
   data() {
     return {
       playerOptions: {
@@ -256,8 +259,113 @@ export default {
         }
       },
       // 
-      map: null,
-			positionLocation:  [117, 36]
+      data: [
+        {
+          position: "113.645422, 34.730936",
+          address: "另一个地址",
+        },
+        {
+          position: "113.685313,34.746453",
+          address: "一个地址",
+        },
+      ],
+      zoom: 10,
+      center: [113.645422, 34.730936],
+      // layerList:new AMap.TileLayer.Satellite(),
+      mapStyle:'amap',
+      markers: [],
+      windows: [],
+      window: "",
+      events: {
+        click(e) {
+          const { lng, lat } = e.lnglat;
+          self.lng = lng;
+          self.lat = lat;
+        },
+      },
+      lng: 0,
+      lat: 0,
+      /*一些工具插件*/
+      plugin: [
+        {
+          pName: "DistrictSearch",
+          events: {
+            init(o) {
+              console.log(o);
+            },
+          },
+        },
+        {
+          // 定位
+          pName: "Geolocation",
+          events: {
+            init(o) {
+              // o是高德地图定位插件实例
+              o.getCurrentPosition((status, result) => {
+                if (result && result.position) {
+                  // 设置经度
+                  self.lng = result.position.lng;
+                  // 设置维度
+                  self.lat = result.position.lat;
+                  // 设置坐标
+                  self.center = [self.lng, self.lat];
+                  self.markers.push([self.lng, self.lat]);
+                  // load
+                  self.loaded = true;
+                  // 页面渲染好后
+                  self.$nextTick();
+                }
+              });
+            },
+          },
+        },
+        {
+          // 工具栏
+          pName: "ToolBar",
+          events: {
+            init(instance) {
+              // console.log(instance);
+            },
+          },
+        },
+        {
+          // 鹰眼（暂且没用到）
+          pName: "OverView",
+          events: {
+            init(instance) {
+              // console.log(instance);
+            },
+          },
+        },
+        {
+          // 地图类型
+          pName: "MapType",
+          defaultType: 0,
+          events: {
+            init(instance) {
+              console.log('instance',instance);
+            },
+          },
+        },
+        {
+          // 搜索（暂且没用到）
+          pName: "PlaceSearch",
+          events: {
+            init(instance) {
+              // console.log(instance)
+            },
+          },
+        },
+      ], 
+
+      // 
+      pointList:[],
+      marker:undefined,
+      map:undefined,
+      a_mark:{},
+      lineArr:[]
+
+      
     }
   },
   computed: {
@@ -267,8 +375,9 @@ export default {
   },
   mounted() {
     this.swiper.slideTo(4, 1000, false)
-    //  
-    this.initmap();  
+    this.$nextTick(function() {
+      this.init()
+    })
   },
   methods: {
     fullScreen(){},
@@ -279,147 +388,173 @@ export default {
       console.log('slide change');
     },
 
-    initmap() {
-      this.$mapboxgl.accessToken = "pk.eyJ1IjoibGlqaWFuZ2ppYW5namlhbmciLCJhIjoiY2s2b2czbmltMG14cDNkbXpldjhkd3c3ZiJ9.zBaMzJo2X2UVPyFTtd5hEQ";
-      
-      var map = new this.$mapboxgl.Map({
-        container: "container", // 绑定组件
-        //地图样式 卫星satellite-v9 街道streets-v11 streets-v9
-        style: "mapbox://styles/mapbox/streets-v9",
-        center: [118.726533,32.012005], // 初始坐标系
-        zoom: 10, //地图初始的拉伸比例
-        layers: [
-          {
-            id: 'simple-tiles',
-            type: 'raster',
-            source: 'osm-tiles',
-            minzoom: 0,
-            maxzoom: 16
-          }
-        ]
-      });
-      
-      var marker = new mapboxgl.Marker({
-      draggable: true
-    })
-      .setLngLat([0, 0])//添加marker的初始化点
-      .addTo(map);//在哪个地图中添加
-    // marker.remove(); 移除marker
- //事件
-    function onDragEnd() {
-      var lngLat = marker.getLngLat();
-      coordinates.style.display = "block";
-      coordinates.innerHTML =
-        "Longitude: " + lngLat.lng + "<br />Latitude: " + lngLat.lat;
-    }
- 
-    marker.on("dragstart", onDragEnd);//鼠标移动结束
-    marker.on("drag", onDragEnd);//鼠标移动中
-    marker.on("dragend", onDragEnd);//鼠标移动开始
-      
-      // 
-      var size = 100;
- 
-      var pulsingDot = {
-        width: size,
-        height: size,
-        data: new Uint8Array(size * size * 4),
-        
-        onAdd: function() {
-          var canvas = document.createElement('canvas');
-          canvas.width = this.width;
-          canvas.height = this.height;
-          this.context = canvas.getContext('2d');
-        },
-        
-        render: function() {
-          var duration = 1000;
-          var t = (performance.now() % duration) / duration;
-          
-          var radius = size / 2 * 0.3;
-          var outerRadius = size / 2 * 0.7 * t + radius;
-          var context = this.context;
-          
-          // draw outer circle
-          context.clearRect(0, 0, this.width, this.height);
-          context.beginPath();
-          context.arc(this.width / 2, this.height / 2, outerRadius, 0, Math.PI * 2);
-          context.fillStyle = 'rgba(255, 200, 200,' + (1 - t) + ')';
-          context.fill();
-          
-          // draw inner circle
-          context.beginPath();
-          context.arc(this.width / 2, this.height / 2, radius, 0, Math.PI * 2);
-          context.fillStyle = 'rgba(255, 100, 100, 1)';
-          context.strokeStyle = 'white';
-          context.lineWidth = 2 + 4 * (1 - t);
-          context.fill();
-          context.stroke();
-          
-          // update this image's data with data from the canvas
-          this.data = context.getImageData(0, 0, this.width, this.height).data;
-          
-          // keep the map repainting
-          map.triggerRepaint();
-          
-          // return `true` to let the map know that the image was updated
-          return true;
-        }
-      };
-
-
-      // 添加飞行
-      map.on('load',()=>{
-        // map.flyTo({
-        //     center: [104.07, 30.67],
-        //     zoom: 5,
-        //     speed: 0.2,
-        //     curve: 2,
-        // })
-       map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
-      
-      map.addLayer({
-        "id": "points",
-        "type": "symbol",
-        "source": {
-          "type": "geojson",
-          "data": {
-            "type": "FeatureCollection",
-            "features": [{
-              "type": "Feature",
-              "geometry": {
-                "type": "Point",
-                "coordinates": [0, 0]
-              }
-            }]
-          }
-        },
-        "layout": {
-          "icon-image": "pulsing-dot"
-        }
-      });
-        // this.loadData()
-      })
     
+    
+     init(){
+      this.map = new AMap.Map('container', {
+        resizeEnable: true,
+        center: [116.397428, 39.90923],
+        layers: [//使用多个图层
+            new AMap.TileLayer.Satellite(),
+            // new AMap.TileLayer.RoadNet()
+          ],
+        zoom: 16
+      })
+      this.map.plugin(["AMap.ToolBar"], function () {
+        //加载工具条
+        var tool = new AMap.ToolBar();
+        this.map.addControl(tool);
+      });
 
-
-    this.map = map
+       this.pointList = [
+        {
+          lng: 116.397428,
+          lat: 39.90923
+        },
+        {
+          lng: 116.398258,
+          lat: 39.904600
+        },
+        {
+          lng: 116.368904,
+          lat: 39.913423
+        },
+        {
+          lng: 116.393428,
+          lat: 39.90923
+        }
+      ]
+      this.startRun();
     },
-    loadData () {
-      const el1 = document.createElement('div')
-      el1.className = 'marker'
-      el1.style.backgroundImage = `url(http://60.191.72.104:11009/mapbox/images/iocMapIocn.png)`
-      el1.style.backgroundPosition = '-42px -26px'
-      el1.style.width = '42px'
-      el1.style.height = '90px'
-      // 地图上设置图片
-      this.endMarker = new mapboxgl.Marker({
-        element: el1,
-        offset: [0, 13],
-        anchor: 'bottom'
-      }).setLngLat(this.positionLocation).addTo(this.map)
-	}
-   
+    startRun(){
+      var lngX 
+      var latY
+      this.pointList.forEach((item, index) => {
+        lngX = item.lng
+        latY = item.lat
+        var lnglat = [lngX, latY];
+
+        if(index==0){
+          // 起始坐标
+          this.marker = new AMap.Marker({
+            position: lnglat,
+            icon: "https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png"
+          });
+          this.map.add(this.marker); 
+          this.marker.setLabel({
+            offset: new AMap.Pixel(20, 20),
+            content: "GPS 坐标系中首开广场"+index
+          });
+        }
+
+
+        // 创建纯文本标记
+        this.marker = new AMap.Text({
+          text:index,
+          anchor:'center', // 设置文本标记锚点
+          draggable:true,
+          cursor:'pointer',
+          angle:10,
+          style:{
+              'margin-bottom': '1rem',
+              'border-radius': '.25rem',
+              'background-color': 'white',
+              'width': '1rem',
+              'border-width': 0,
+              'box-shadow': '0 2px 6px 0 rgba(114, 124, 245, .5)',
+              'text-align': 'center',
+              'font-size': '20px',
+              'color': 'green',
+          },
+          position: lnglat
+        });
+        this.marker.setMap(this.map);
+
+        
+        // marker.setLabel({
+        //   offset: new AMap.Pixel(20, 20),
+        //   content: "<div class='tip-info'>"+ index+"测试</div>" 
+        // });
+        this.marker.setLabel(null)
+        this.marker.on('mouseover', function (e){
+          console.log('click-lng1',e.lnglat.lng)
+          console.log('click-lat1',e.lnglat.lat)
+            this.marker.setLabel({
+              offset: new AMap.Pixel(20, 20),
+              content: "<div class='tip-info'>"+ index+"测试</div>" 
+            });
+        })
+        this.marker.on('mouseout', function (e){
+            this.marker.setLabel(null);
+        })
+
+        // marker.on('click', function (e) {
+        //     // console.log("通过文字点击了楼宇",e)
+        //     // e.setLabel(null);
+        //     console.log('this',$(this).find('.amap-marker-label').fadeIn())
+        //     $(this).setLabel(null);
+        //     if (typeof cb === 'function') {
+        //         // 查楼宇详情回调函数
+        //         cb(position)
+        //     }
+        // })
+
+      })
+      this.completeEventHandler();
+
+    },
+    completeEventHandler(){
+      this.a_mark = {
+                lng: 116.368904,
+                lat: 39.913423
+              }
+      for(var i = 1; i < this.pointList.length; i++){
+        // 创建包含4个节点的折线及文字标注
+        
+        var path = [
+          new AMap.LngLat(this.pointList[i-1].lng,this.pointList[i-1].lat),
+          new AMap.LngLat(this.pointList[i].lng,this.pointList[i].lat)
+        ]
+        console.log('线',path)
+        // 创建折线实例
+        var currentInd
+        if(this.a_mark.lng == this.pointList[i].lng && this.a_mark.lat == this.pointList[i].lat ){
+            currentInd = i
+        } 
+        if(i>currentInd){
+          var polyline = new AMap.Polyline({
+            path: path, 
+            borderWeight: 2,
+            strokeWeight: 10,
+            showDir:true,
+            strokeColor: 'blue', // 线条颜色
+            lineJoin: 'round' // 折线拐点连接处样式
+          });
+        }else{
+          var polyline = new AMap.Polyline({
+            path: path,  
+            borderWeight: 2,
+            strokeWeight: 10,
+            showDir:true,
+            strokeColor: 'red', // 线条颜色
+            lineJoin: 'round' // 折线拐点连接处样式
+          });
+
+          // 轨迹回放(略)
+          this.lineArr = new Array();
+          this.lineArr.push(new AMap.LngLat(this.pointList[i].lng,this.pointList[i].lat));
+          this.marker.moveAlong(this.lineArr, 200);
+    
+        }
+       
+        // 将折线添加至地图实例
+        this.map.add(polyline);
+
+        
+      }
+      
+    },
+
 
   }
   
@@ -427,10 +562,8 @@ export default {
 </script>
 
 <style>
-
-
 .fly-page{
-  width:100%;
+  width:1920px;
   height:100vh;
   position: relative;
   overflow: hidden;
@@ -535,7 +668,7 @@ export default {
   position: fixed;
   bottom: 0;
   z-index: 1;
-  width: 100%;
+  width: 1920px;
   height: 334px;
   background: url('/assets/images/bottom.png') no-repeat center top;
   background-size: cover
@@ -589,7 +722,6 @@ export default {
   width: 57px;
   height:57px;
   position:relative;
-  float:left;
 }
 .control-ok{
   width: 57px;
@@ -803,19 +935,5 @@ export default {
 .amap{
   width: 400px;
   height: 238px;
-}
-
-
-
-.clearfix:before, .clearfix:after {
-    content: "";
-    display: table;
-}
-.clearfix:after {
-    clear: both;
-}
-.clearfix {
-    *zoom: 1;
-    /*ie6,7*/
 }
 </style>

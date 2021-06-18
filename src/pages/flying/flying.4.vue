@@ -256,7 +256,7 @@ export default {
         }
       },
       // 
-      map: null,
+     map: null,
 			positionLocation:  [117, 36]
     }
   },
