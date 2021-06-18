@@ -38,7 +38,8 @@ import {
   MessageBox,
   Message,
   Notification,
-  Steps
+  Steps,
+  Progress
 } from 'element-ui';
 import ElementLocale from 'element-ui/lib/locale';
 import i18n from '@/i18n';
@@ -79,6 +80,8 @@ Vue.use(Icon);
 Vue.use(Upload);
 Vue.use(Header);
 Vue.use(Steps);
+Vue.use(Progress);
+
 
 Vue.use(Loading.directive);
 
