@@ -81,6 +81,7 @@ export default {
           });
         }
       }
+      
       return markers;
     },
     depotMarkers() {
@@ -98,6 +99,7 @@ export default {
             }
           });
           console.log('dd',markers)
+          console.log('markers-DDDD',markers)
         }
       }
       return markers;

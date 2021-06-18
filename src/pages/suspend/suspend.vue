@@ -407,10 +407,17 @@ export default {
           }
       },
       // 地图
-      markers:[],
+      markers:[
+        {
+          id: 4,
+          name: "Depot",
+          position: {lng: 114.22475167, lat: 22.68580217},
+          type: "depot"
+        }
+      ],
       places:[],
       fit:false,
-      styling:'',
+      styling:{},
       type: '',
       fit: true,
       popover: {
@@ -424,7 +431,7 @@ export default {
   methods: {
     fullScreen(){},
     // 地图
-    
+
     handleMove() {
      
     },
@@ -725,6 +732,11 @@ export default {
 }
 .suspend-right-con{
   position: relative;
+  padding:10px;
+  height:calc(100% - 20px)
+}
+.suspend-map{
+  width:100%;
   height:100%;
 }
 .suspend-bottom{

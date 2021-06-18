@@ -285,8 +285,8 @@ export default {
       var map = new this.$mapboxgl.Map({
         container: "container", // 绑定组件
         //地图样式 卫星satellite-v9 街道streets-v11 streets-v9
-        style: "mapbox://styles/mapbox/streets-v9",
-        center: [118.726533,32.012005], // 初始坐标系
+        style: "mapbox://styles/mapbox/streets-v11",
+        center: [12.550343, 55.665957], // 初始坐标系
         zoom: 10, //地图初始的拉伸比例
         layers: [
           {
@@ -297,27 +297,9 @@ export default {
             maxzoom: 16
           }
         ]
-      });
-      
-      var marker = new mapboxgl.Marker({
-      draggable: true
-    })
-      .setLngLat([0, 0])//添加marker的初始化点
-      .addTo(map);//在哪个地图中添加
-    // marker.remove(); 移除marker
- //事件
-    function onDragEnd() {
-      var lngLat = marker.getLngLat();
-      coordinates.style.display = "block";
-      coordinates.innerHTML =
-        "Longitude: " + lngLat.lng + "<br />Latitude: " + lngLat.lat;
-    }
- 
-    marker.on("dragstart", onDragEnd);//鼠标移动结束
-    marker.on("drag", onDragEnd);//鼠标移动中
-    marker.on("dragend", onDragEnd);//鼠标移动开始
-      
-      // 
+      })
+    
+      // 画波点
       var size = 100;
  
       var pulsingDot = {
@@ -376,49 +358,157 @@ export default {
         //     speed: 0.2,
         //     curve: 2,
         // })
-       map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
-      
-      map.addLayer({
-        "id": "points",
-        "type": "symbol",
-        "source": {
-          "type": "geojson",
-          "data": {
-            "type": "FeatureCollection",
-            "features": [{
-              "type": "Feature",
-              "geometry": {
-                "type": "Point",
-                "coordinates": [0, 0]
-              }
-            }]
+
+        // 
+        map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 3 });
+        map.addLayer({
+          "id": "points",
+          "type": "symbol",
+          "source": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [{
+                "type": "Feature",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [12.550343, 55.665957] //点位置
+                }
+              }]
+            }
+          },
+          "layout": {
+            "icon-image": "pulsing-dot"
           }
-        },
-        "layout": {
-          "icon-image": "pulsing-dot"
+        });
+        // 
+        map.addImage('pulsing-dot1', pulsingDot, { pixelRatio: 3 });
+        map.addLayer({
+          "id": "points1",
+          "type": "symbol",
+          "source": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [{
+                "type": "Feature",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [0, 0] //点位置
+                }
+              }]
+            }
+          },
+          "layout": {
+            "icon-image": "pulsing-dot1"
+          }
+        });
+        // 
+        mm = {
+          lngLat:{
+            lng:114.22475167,
+            lat:22.68580217
+          }
+          
         }
-      });
-        // this.loadData()
+        this.plottingMarker(mm)
+        this.linePlotting(mm)
+        
+      
       })
     
 
 
-    this.map = map
+    // this.map = map
+    // this.InitLayer()
     },
-    loadData () {
-      const el1 = document.createElement('div')
-      el1.className = 'marker'
-      el1.style.backgroundImage = `url(http://60.191.72.104:11009/mapbox/images/iocMapIocn.png)`
-      el1.style.backgroundPosition = '-42px -26px'
-      el1.style.width = '42px'
-      el1.style.height = '90px'
-      // 地图上设置图片
-      this.endMarker = new mapboxgl.Marker({
-        element: el1,
-        offset: [0, 13],
-        anchor: 'bottom'
-      }).setLngLat(this.positionLocation).addTo(this.map)
-	}
+    // 
+    /**
+     * InitLayer 构造函数
+     * mapbox初始化地图
+     */
+    initLayer(map){
+        this.map = map;
+        this.coordsLineArray = [];//存放经纬度
+        this.k = 0;//记录几个点
+
+    },
+    /**
+     * 绘制点图层
+     * 方法名 plottingMarker
+     * e 事件
+     *
+     */
+    plottingMarker(e){
+        let coords = [e.lngLat.lng,e.lngLat.lat];
+        let marker = new mapboxgl.Marker()
+        .setLngLat(coords)
+        .addTo(this.map)
+    },
+    /**
+     * 绘制线图层
+     * 方法名 linePlotting
+     * e 事件
+     */
+    linePlotting(e){
+        let geojsonLine = {
+            "type":"FeatureCollection",
+            "features":[]
+        }
+        let coords = [e.lngLat.lng,e.lngLat.lat];
+        this.coordsLineArray.push(coords);
+        let ele = document.createElement("div");
+        ele.className = "start_point";
+        if(this.coordsLineArray.length>1){
+            let htmlStr = "<p style='color:white;background-color:#434343;padding:2px 5px;'>终点</p>"
+            ele.innerHTML = htmlStr;
+        }else{
+            let htmlStr = "<p style='color:white;background-color:#434343;padding:2px 5px;'>起始点</p>" 
+            ele.innerHTML = htmlStr;
+        }
+        let options = {
+            element:ele,
+            anchor:0,
+            offset:[0,0]
+        }
+        new mapboxgl.Marker(options)
+        .setLngLat(coords)
+        .addTo(this.map)
+        if(this.coordsLineArray.length>1){
+            geojsonLine.features.push({
+                "type":"Feature",
+                "geometry":{
+                    "type":"LineString",
+                    "coordinates":this.coordsLineArray
+                }
+                
+            })
+            this.map.addSource("line_plotting"+this.k,{
+                "type":"geojson",
+                "data":geojsonLine
+            })
+            this.map.addLayer({
+                "id":"line_plottinf"+this.k,
+                "type":"line",
+                "source":"line_plotting"+this.k,
+                "layout":{
+                    "line-cap":"round",
+                    "line-json":"round"
+                },
+                "paint":{
+                    "line-color":"#ff4895",
+                    "line-width":2,
+                    "line-opacity":0.5
+                }
+            })
+            K++;
+            this.coordsLineArray = [];
+        }
+
+    }
+
+
+// 
    
 
   }
